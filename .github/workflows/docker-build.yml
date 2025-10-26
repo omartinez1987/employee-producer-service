@@ -12,6 +12,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write  # 👈 habilita OIDC
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,13 +28,18 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
+      
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           token_format: access_token
-          workload_identity_provider: "projects/1075323040340/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
-          service_account: "118238188403478752590@testing-kafka-472600.iam.gserviceaccount.com"
+          workload_identity_provider: projects/1075323040340/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: 118238188403478752590@testing-kafka-472600.iam.gserviceaccount.com
+          create_credentials_file: true
+          export_environment_variables: true
+          cleanup_credentials: true
+          access_token_lifetime: 3600s
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
       # 3️⃣ Authenticate Docker to use Artifact Registry
       - name: Configure Docker for Artifact Registry
