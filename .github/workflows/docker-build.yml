@@ -15,6 +15,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
+      # Cache Maven dependencies
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       # 2️⃣ Set up gcloud CLI and authenticate
       - name: Set up Google Cloud SDK and more
@@ -40,7 +49,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/employee-producer-service/employee-producer-service:latest .
+          docker build -t us-central1-docker.pkg.dev/testing-kafka-472600/employee-producer-service/employee-producer-service:latest .
+          # docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/employee-producer-service/employee-producer-service:latest .
+          
 
       # Push only on main branch, skip on pull requests
       - name: Push Docker image
