@@ -40,7 +40,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/employee-producer-service/employee-producer-service:latest .
+          docker build -t us-central1-docker.pkg.dev/testing-kafka-472600/employee-producer-service/employee-producer-service:latest .
+          # docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/employee-producer-service/employee-producer-service:latest .
+          
 
       # Push only on main branch, skip on pull requests
       - name: Push Docker image
