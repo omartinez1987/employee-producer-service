@@ -33,9 +33,11 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           token_format: access_token
-          workload_identity_provider: projects/1075323040340/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          # workload_identity_provider: projects/1075323040340/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           # service account corregida
-          service_account: github-actions@testing-kafka-472600.iam.gserviceaccount.com
+          # service_account: github-actions@testing-kafka-472600.iam.gserviceaccount.com
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
           create_credentials_file: true
           export_environment_variables: true
           cleanup_credentials: true
@@ -47,15 +49,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      # Debug: muestra versión y si la auth creó credenciales; ayuda a diagnosticar 404 de generateAccessToken
-      - name: Debug gcloud auth
-        run: |
-          gcloud --version || true
-          gcloud auth list || true
-          # intenta describir la service account que utilizamos
-          gcloud iam service-accounts describe github-actions@testing-kafka-472600.iam.gserviceaccount.com --project=testing-kafka-472600 || true
-
       # 3️⃣ Authenticate Docker to use Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: |
@@ -73,7 +66,7 @@ jobs:
 
       - name: Build Docker image df
         run: |
-          docker build -t us-central1-docker.pkg.dev/testing-kafka-472600/employee-producer-service/employee-producer-service:latest .
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/employee-producer-service/employee-producer-service:latest .
           docker images
 
       # Push only on main branch, skip on pull requests
