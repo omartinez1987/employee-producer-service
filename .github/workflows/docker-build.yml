@@ -28,18 +28,33 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      
+      # Authenticate to google cloud, by using service account and Workload Identity Federation
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           token_format: access_token
           workload_identity_provider: projects/1075323040340/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: 118238188403478752590@testing-kafka-472600.iam.gserviceaccount.com
+          # service account corregida
+          service_account: github-actions@testing-kafka-472600.iam.gserviceaccount.com
           create_credentials_file: true
           export_environment_variables: true
           cleanup_credentials: true
           access_token_lifetime: 3600s
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+
+      # Install Cloud SDK so we can run gcloud commands (gcloud is not preinstalled)
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # Debug: muestra versión y si la auth creó credenciales; ayuda a diagnosticar 404 de generateAccessToken
+      - name: Debug gcloud auth
+        run: |
+          gcloud --version || true
+          gcloud auth list || true
+          # intenta describir la service account que utilizamos
+          gcloud iam service-accounts describe github-actions@testing-kafka-472600.iam.gserviceaccount.com --project=testing-kafka-472600 || true
 
       # 3️⃣ Authenticate Docker to use Artifact Registry
       - name: Configure Docker for Artifact Registry
